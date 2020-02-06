@@ -7,7 +7,15 @@ dotenv.config();
 
 const app = express();
 
-app.use("/", rateLimiter);
+// Long term, we'd likely want different values per route, easier if routes are extractd from the index
+app.use(
+  "/",
+  rateLimiter({
+    maximumTotalRequests: 100,
+    maximumRequestsPerClient: 10,
+    intervalMilliseconds: 1000
+  })
+);
 // configs come from standard PostgreSQL env vars
 // https://www.postgresql.org/docs/9.6/static/libpq-envars.html
 const pool = new pg.Pool();

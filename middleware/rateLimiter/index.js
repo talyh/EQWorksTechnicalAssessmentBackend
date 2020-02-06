@@ -1,22 +1,14 @@
-const getClientIP = require("../utils/getClientIP");
-
-const maximumTotalRequests = 10;
-const maximumRequestsPerClient = 2;
-const intervalMilliseconds = 600000;
+const getClientIP = require("../../utils/getClientIP");
 
 let apiCalls = { totalRequests: 0 };
 
 const addNewClient = (apiCalls, ip) => {
-  // console.log("creating new client", ip);
   const newEntry = { date: new Date(), count: 1 };
   return { ...apiCalls, [ip]: newEntry };
 };
 
 const removeClient = (apiCalls, ip) => {
-  // console.log("removing client", ip);
   let { [ip]: _, ...result } = apiCalls;
-  // console.log("result.totalRequests", result.totalRequests);
-  // console.log("-[ip].totalRequests", apiCalls.totalRequests);
   const newTotalRequests = adjustTotalRequestCount(
     result.totalRequests,
     -[ip].totalRequests
@@ -31,11 +23,11 @@ const adjustTotalRequestCount = (totalRequests, adjustBy) => {
   return totalRequests + adjustBy;
 };
 
-const countClientRequests = (req, res, next) => {
-  // console.log("-------------------");
-  // console.log("new call against", apiCalls);
-  // console.log("-------------------");
-
+const countClientRequests = ({
+  maximumTotalRequests,
+  maximumRequestsPerClient,
+  intervalMilliseconds
+}) => (req, res, next) => {
   const ip = getClientIP(req);
 
   // if we haven't reached capacity, check the specific client capacity
@@ -63,7 +55,6 @@ const countClientRequests = (req, res, next) => {
       const cooldownDate = new Date(apiCalls[ip].date);
       cooldownDate.setMilliseconds(intervalMilliseconds);
 
-      // console.log("rejecting request");
       return res
         .status(429)
         .set({ "Retry-After": cooldownDate })
@@ -74,7 +65,6 @@ const countClientRequests = (req, res, next) => {
   }
   // else, block the call
   else {
-    // console.log("rejecting request");
     return res.status(429).json({
       error:
         "This endpoint is experiencing a high amount of requests. Please try again later."
