@@ -1,3 +1,7 @@
+### Live version
+This project can be accessed at https://talyh-eqworks-backend.herokuapp.com/
+
+
 Work Sample for Product Aspect, Node.js Variant
 ---
 
